@@ -45,8 +45,8 @@
 
 typedef __packed struct {
     __packed struct {
-        int16_t ch[5]; // analog joysticks
-        uint8_t s[2];  // three stage switches
+        int16_t ch[5];  // analog joysticks
+        uint8_t s[2];   // three stage switches
     } rc;
     __packed struct {
         int16_t x;
@@ -60,6 +60,24 @@ typedef __packed struct {
     } key;
 
 } RC_ctrl_t;
+
+typedef enum {
+    rightX = 0,
+    rightY = 1,
+    leftX = 2,
+    leftY = 3,
+} joystickAxis;
+
+typedef enum {
+    right = 0,
+    left = 1,
+} switchType;
+
+typedef enum {
+    up = 1,
+    mid = 3,
+    down = 2,
+} switchPosition;
 
 typedef enum {
     btnW = 0,
@@ -87,6 +105,12 @@ extern RC_ctrl_t lastRcDataStruct;
 
 extern bool btnIsRising(btnType btn);
 extern bool btnIsFalling(btnType btn);
+
+extern bool switchIsRising(switchType sw, switchPosition pos);
+extern bool switchIsFalling(switchType sw, switchPosition pos);
+
+extern uint8_t getSwitch(switchType sw);
+extern float getJoystick(joystickAxis joy);
 
 extern RC_ctrl_t* getRCData();
 

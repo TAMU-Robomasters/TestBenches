@@ -6,10 +6,10 @@
 #include "init.hpp"
 #include <arm_math.h>
 
-float rightX;
-float rightY;
-float leftX;
-float leftY;
+float rX;
+float rY;
+float lX;
+float lY;
 float switch1;
 float switch2;
 float angle;
@@ -33,14 +33,13 @@ pidInstance velPidC1(pidType::velocity, 0.7, 0.0, 0.0);
 pidInstance velPidC2(pidType::velocity, 0.7, 0.0, 0.0);
 pidInstance velPidC3(pidType::velocity, 0.7, 0.0, 0.0);
 pidInstance velPidC4(pidType::velocity, 0.7, 0.0, 0.0);
-	
+
 chassisMotor c1Motor(userCAN::M3508_M1_ID, velPidC1);
 chassisMotor c2Motor(userCAN::M3508_M2_ID, velPidC2);
 chassisMotor c3Motor(userCAN::M3508_M3_ID, velPidC3);
 chassisMotor c4Motor(userCAN::M3508_M4_ID, velPidC4);
 
 void task() {
-
     for (;;) {
         update();
 
@@ -56,19 +55,19 @@ void update() {
         currState = notRunning;
         // will change later based on RC input and sensor based decision making
     }
-    
-    rightX = static_cast<float>(rcDataStruct.rc.ch[0]) / 660;
-    rightY = static_cast<float>(rcDataStruct.rc.ch[1]) / 660;
-    leftX = static_cast<float>(rcDataStruct.rc.ch[2]) / 660;
-    leftY = static_cast<float>(rcDataStruct.rc.ch[3]) / 660;
-		
-    switch1 = (rcDataStruct.rc.s[0]);
-		switch2 = (rcDataStruct.rc.s[1]);
 
-    angle = atan2(leftY, leftX);
-		angleOutput = (angle / (float)PI) * 180;
-		
-		magnitude = sqrt(pow(leftY, 2) + pow(leftX, 2));
+    rX = getJoystick(joystickAxis::rightX) / 660;
+    rY = getJoystick(joystickAxis::rightY) / 660;
+    lX = getJoystick(joystickAxis::leftX) / 660;
+    lY = getJoystick(joystickAxis::leftY) / 660;
+
+    switch1 = (rcDataStruct.rc.s[0]);
+    switch2 = (rcDataStruct.rc.s[1]);
+
+    angle = atan2(lY, lX);
+    angleOutput = (angle / (float)PI) * 180;
+
+    magnitude = sqrt(pow(lY, 2) + pow(lX, 2));
 
     c1Output = static_cast<double>(c1Motor.getFeedback()->rotor_speed) / 19.0;
 
@@ -82,38 +81,38 @@ void update() {
 
 void act() {
     switch (currState) {
-    case notRunning:
-        c1Motor.setPower(0);
-        c2Motor.setPower(0);
-        c3Motor.setPower(0);
-        c4Motor.setPower(0);
-        break;
+        case notRunning:
+            c1Motor.setPower(0);
+            c2Motor.setPower(0);
+            c3Motor.setPower(0);
+            c4Motor.setPower(0);
+            break;
 
-    case followGimbal:
-        c1Motor.setPower(0);
-        c2Motor.setPower(0);
-        c3Motor.setPower(0);
-        c4Motor.setPower(0);
-        // obviously this will change when we have things to put here
-        break;
+        case followGimbal:
+            c1Motor.setPower(0);
+            c2Motor.setPower(0);
+            c3Motor.setPower(0);
+            c4Motor.setPower(0);
+            // obviously this will change when we have things to put here
+            break;
 
-    case manual:
-        rcToPower(angle, magnitude, rightX);
-        velPidC1.loop();
-        velPidC2.loop();
-        velPidC3.loop();
-        velPidC4.loop();
-        // double power1 = velPidC1.getTarget();
-        // double power2 = velPidC2.getTarget();
-        // double power3 = velPidC3.getTarget();
-        // double power4 = velPidC4.getTarget();
-        c1Motor.setPower(velPidC1.getTarget());
-        c2Motor.setPower(velPidC2.getTarget());
-        c3Motor.setPower(velPidC3.getTarget());
-        c4Motor.setPower(velPidC4.getTarget());
-        // if current control, power will be set in the CAN task
-        // this will change when we have things to put here
-        break;
+        case manual:
+            rcToPower(angle, magnitude, rX);
+            velPidC1.loop();
+            velPidC2.loop();
+            velPidC3.loop();
+            velPidC4.loop();
+            // double power1 = velPidC1.getTarget();
+            // double power2 = velPidC2.getTarget();
+            // double power3 = velPidC3.getTarget();
+            // double power4 = velPidC4.getTarget();
+            c1Motor.setPower(velPidC1.getTarget());
+            c2Motor.setPower(velPidC2.getTarget());
+            c3Motor.setPower(velPidC3.getTarget());
+            c4Motor.setPower(velPidC4.getTarget());
+            // if current control, power will be set in the CAN task
+            // this will change when we have things to put here
+            break;
     }
 }
 
@@ -127,8 +126,8 @@ void rcToPower(double angle, double magnitude, double yaw) {
     // motor 4 back right
     float turnScalar = 0.6;
 
-    disp = ((abs(magnitude) + abs(yaw)) == 0) ? 0 : abs(magnitude) / (abs(magnitude) + turnScalar*abs(yaw));
-    turning = ((abs(magnitude) + abs(yaw)) == 0) ? 0 : turnScalar*abs(yaw) / (abs(magnitude) + turnScalar*abs(yaw));
+    disp = ((abs(magnitude) + abs(yaw)) == 0) ? 0 : abs(magnitude) / (abs(magnitude) + turnScalar * abs(yaw));
+    turning = ((abs(magnitude) + abs(yaw)) == 0) ? 0 : turnScalar * abs(yaw) / (abs(magnitude) + turnScalar * abs(yaw));
     //disp = 1 - abs(turning);
     // disp and turning represent the percentage of how much the user wants to displace or turn
     // displacement takes priority here
@@ -147,7 +146,7 @@ void rcToPower(double angle, double magnitude, double yaw) {
     motor2P = (turning * motor2Turn) + (disp * motor2Disp);
     motor3P = (turning * motor3Turn) + (disp * motor3Disp);
     motor4P = (turning * motor4Turn) + (disp * motor4Disp);
-	
+
     velPidC1.setTarget(motor1P * 200);
     velPidC2.setTarget(motor2P * 200);
     velPidC3.setTarget(motor3P * 200);
@@ -155,4 +154,4 @@ void rcToPower(double angle, double magnitude, double yaw) {
     // scaling max speed up to 200 rpm, can be set up to 482rpm
 }
 
-} // namespace chassis
+}  // namespace chassis

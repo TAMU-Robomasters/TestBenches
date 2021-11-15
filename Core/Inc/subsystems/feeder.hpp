@@ -24,6 +24,4 @@ extern void update();
 
 extern void act();
 
-extern void indicator();
-
-} // namespace feeder
+}  // namespace feeder

@@ -56,4 +56,5 @@ devacustom\feeder.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis
 devacustom\feeder.o: ../Core/Inc/information/uart_protocol.hpp
 devacustom\feeder.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 devacustom\feeder.o: ../Core/Inc/usart.h
+devacustom\feeder.o: ../Core/Inc/information/rc_protocol.h
 devacustom\feeder.o: ../Core/Inc/init.hpp

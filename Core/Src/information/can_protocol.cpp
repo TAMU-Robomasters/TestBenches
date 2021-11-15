@@ -20,7 +20,7 @@ static volatile uint32_t unknown_message = 0;
 
 static CAN_RxHeaderTypeDef rx_header;
 //rx_header.stdId = 4;
-static uint8_t rx_data[8]; // data field for incoming messages (from DJI motors/escs)
+static uint8_t rx_data[8];  // data field for incoming messages (from DJI motors/escs)
 
 static bool initialized = false;
 
@@ -42,12 +42,12 @@ void canFilterInit() {
     can_filter_st.FilterMaskIdHigh = 0x0000;
     can_filter_st.FilterMaskIdLow = 0x0000;
     can_filter_st.FilterFIFOAssignment = CAN_FilterFIFO0;
-    can_filter_st.SlaveStartFilterBank = 14; //can1(0-13)和can2(14-27)分别得到一半的filter
+    can_filter_st.SlaveStartFilterBank = 14;  //can1(0-13)和can2(14-27)分别得到一半的filter
     can_filter_st.FilterActivation = ENABLE;
 
     if (HAL_CAN_ConfigFilter(&hcan1, &can_filter_st) == 0x00U) {
         // indicator here
-    } // Creates filter that doesn't filter anything
+    }  // Creates filter that doesn't filter anything
 
     if (HAL_CAN_Start(&hcan1) == 0x00U) {
         // indicator here
@@ -60,7 +60,6 @@ void canFilterInit() {
 }
 
 int8_t deviceInit(device_t* can_devices) {
-
     if (can_devices == NULL) {
         return DEVICE_ERR_NULL;
     }
@@ -89,7 +88,7 @@ device_t* getDevices(void) {
 }
 
 int8_t motor_ControlChassis(float32_t m1, float32_t m2, float32_t m3, float32_t m4, CAN_HandleTypeDef can) {
-    int16_t motor1 = static_cast<int16_t>((m1 * M3508_MAX_CURRENT) / 100); // scalar describes current cap but is named volt for some reason
+    int16_t motor1 = static_cast<int16_t>((m1 * M3508_MAX_CURRENT) / 100);  // scalar describes current cap but is named volt for some reason
     int16_t motor2 = static_cast<int16_t>((m2 * M3508_MAX_CURRENT) / 100);
     int16_t motor3 = static_cast<int16_t>((m3 * M3508_MAX_CURRENT) / 100);
     int16_t motor4 = static_cast<int16_t>((m4 * M3508_MAX_CURRENT) / 100);
@@ -164,41 +163,40 @@ void getMessage(CAN_HandleTypeDef* can) {
 
     // uint8_t index;
     switch (rx_header.StdId) {
-    case M3508_M1_ID:
-        // motor_Decode(&(can_devices_ptr->feeder_fb), rx_data);
-        motor_Decode(chassis::c1Motor.getFeedback(), rx_data);
-        break;
-    case M3508_M2_ID:
-        motor_Decode(chassis::c2Motor.getFeedback(), rx_data);
-        break;
-    case M3508_M3_ID:
-        motor_Decode(chassis::c3Motor.getFeedback(), rx_data);
-        break;
-    case M3508_M4_ID:
-        motor_Decode(chassis::c4Motor.getFeedback(), rx_data);
-        break;
+        case M3508_M1_ID:
+            // motor_Decode(&(can_devices_ptr->feeder_fb), rx_data);
+            motor_Decode(chassis::c1Motor.getFeedback(), rx_data);
+            break;
+        case M3508_M2_ID:
+            motor_Decode(chassis::c2Motor.getFeedback(), rx_data);
+            break;
+        case M3508_M3_ID:
+            motor_Decode(chassis::c3Motor.getFeedback(), rx_data);
+            break;
+        case M3508_M4_ID:
+            motor_Decode(chassis::c4Motor.getFeedback(), rx_data);
+            break;
 
-    case M2006_FEEDER_ID:
-        motor_Decode(&(can_devices_ptr->feeder_fb), rx_data);
-        break;
+        case M2006_FEEDER_ID:
+            motor_Decode(&(can_devices_ptr->feeder_fb), rx_data);
+            break;
 
-    case GM6020_YAW_ID:
-        motor_Decode(gimbal::yawMotor.getFeedback(), rx_data);
-        break;
+        case GM6020_YAW_ID:
+            motor_Decode(gimbal::yawMotor.getFeedback(), rx_data);
+            break;
 
-    case GM6020_PIT_ID:
-        motor_Decode(gimbal::pitchMotor.getFeedback(), rx_data);
-        break;
+        case GM6020_PIT_ID:
+            motor_Decode(gimbal::pitchMotor.getFeedback(), rx_data);
+            break;
 
-    default:
-        unknown_message++;
-        HAL_GPIO_WritePin(GPIOE, LED_RED_Pin, GPIO_PIN_RESET);
-        break;
+        default:
+            unknown_message++;
+            HAL_GPIO_WritePin(GPIOE, LED_RED_Pin, GPIO_PIN_RESET);
+            break;
     }
 }
 
 void task() {
-
     userInit::canInit();
 
     for (;;) {
@@ -232,4 +230,4 @@ void send() {
                                    hcan1);
 }
 
-} // namespace userCAN
+}  // namespace userCAN
