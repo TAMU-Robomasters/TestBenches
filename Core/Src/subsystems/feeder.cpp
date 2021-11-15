@@ -8,6 +8,8 @@
 #include "main.h"
 #include "stm32f4xx_hal.h"
 
+#define MAX_FEEDER_RPM 416
+
 float f1Output;
 float indexerP;
 float indexerI;
@@ -15,6 +17,9 @@ float indexerD;
 float indexerPidOut, agitatorLeftPidOut, agitatorRightPidOut;
 float unJamTimer;
 float runningTimer;
+
+int direction = 1;
+float rpmBoost = 1;
 
 namespace feeder {
 
@@ -45,14 +50,15 @@ void task() {
 
 void update() {
     //currState = notRunning;
-		if (getSwitch(switchType::right) == switchPosition::up){
-			if (getSwitch(switchType::left) == switchPosition::up) {
+    if (getSwitch(switchType::left) == switchPosition::mid) {
         currState = running;
-			}
-			else {
+        direction = 1;
+    } else if (getSwitch(switchType::left) == switchPosition::up) {
+        currState = running;
+        direction = -1;
+    } else {
         currState = notRunning;
-			}
-		}
+    }
 
     //f1Output = agitatorRight.getSpeed();
     indexerI = velPidIndexer.getIntegral();
@@ -64,30 +70,29 @@ void update() {
 void act() {
     switch (currState) {
     case notRunning: {
-			  HAL_GPIO_WritePin(GPIOH, POWER4_CTRL_Pin, GPIO_PIN_RESET);	
+		HAL_GPIO_WritePin(GPIOH, POWER4_CTRL_Pin, GPIO_PIN_RESET);	
         agitatorLeft.setPower(0);
         agitatorRight.setPower(0);
         indexer.setPower(0);
         break;
     }
     case running: {
-			  HAL_GPIO_WritePin(GPIOH, POWER4_CTRL_Pin, GPIO_PIN_SET);
-        //if (runningTimer <= 2000){
-        float feederSpeed = -25; //Was 150 before speeding   
-        // velPidAgitatorLeft.setTarget(feederSpeed * (2.0f / 7.0f));
-        // velPidAgitatorRight.setTarget(-feederSpeed * (2.0f / 7.0f));
-        velPidIndexer.setTarget(feederSpeed);
-
+		HAL_GPIO_WritePin(GPIOH, POWER4_CTRL_Pin, GPIO_PIN_SET);
+        if (getJoystick(joystickAxis::leftY) < -0.75) {
+            rpmBoost = 2.0f;
+        } else {
+            rpmBoost = 1.0f;
+        }
+        if (getSwitch(switchType::right) == switchPosition::down) {
+                velPidIndexer.setTarget(48.0f * direction * rpmBoost);
+            } else if (getSwitch(switchType::right) == switchPosition::mid) {
+                velPidIndexer.setTarget(72.0f * direction * rpmBoost);
+            } else if (getSwitch(switchType::right) == switchPosition::up) {
+                velPidIndexer.setTarget(100.0f * direction * rpmBoost);
+        }
         // agitatorRight.setPower(velPidAgitatorRight.loop(agitatorRight.getSpeed()));
         // agitatorLeft.setPower(velPidAgitatorLeft.loop(agitatorLeft.getSpeed()));
         indexer.setPower(velPidIndexer.loop(indexer.getSpeed()));
-
-        runningTimer += 10;
-        //}
-        // else {
-        //     runningTimer = 0;
-        //     currState = unJam;
-        // }
         break;
     }
     case unJam: {

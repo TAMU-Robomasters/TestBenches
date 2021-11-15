@@ -82,92 +82,92 @@ void update() {
     struct userUART::aimMsgStruct* pxAimRxedPointer;
     struct userUART::gimbMsgStruct* pxGimbRxedPointer;
 
-    if (operatingType == primary) {
-        // currState = idle; // default state
-        messagesPerSec = bung / ((HAL_GetTick() - startTime) / 1000);
+    // if (operatingType == primary) {
+        currState = notRunning; // default state
+    //     messagesPerSec = bung / ((HAL_GetTick() - startTime) / 1000);
 
-        pitchAngleShow = radToDeg(pitchMotor.getAngle());
-        pitchTargetShow = normalizePitchAngle();
-        pitchPidShow = pitchPosPid.getOutput();
-        pitchErrorShow = calculateAngleError(pitchMotor.getAngle(), pitchPosPid.getTarget());
-        pitchTemp = pitchMotor.getTemp();
+    //     pitchAngleShow = radToDeg(pitchMotor.getAngle());
+    //     pitchTargetShow = normalizePitchAngle();
+    //     pitchPidShow = pitchPosPid.getOutput();
+    //     pitchErrorShow = calculateAngleError(pitchMotor.getAngle(), pitchPosPid.getTarget());
+    //     pitchTemp = pitchMotor.getTemp();
 
-        userIMU::imuUpdate();
+    //     userIMU::imuUpdate();
 
-        roll = userIMU::imuRoll();
-        pitch = userIMU::imuPitch();
-        yaw = userIMU::imuYaw();
+    //     roll = userIMU::imuRoll();
+    //     pitch = userIMU::imuPitch();
+    //     yaw = userIMU::imuYaw();
 
-        if (jetsonMessageTimeout > 3000 || yStddev == 1) {
-						dispYaw = 0;
-						dispPitch = 0;
-            currState = originalIdle;
-						// flywheel::currState = flywheel::flywheelStates::notRunning;
-            feeder::currState = feeder::feederStates::notRunning;
-        }
+    //     if (jetsonMessageTimeout > 3000 || yStddev == 1) {
+	// 					dispYaw = 0;
+	// 					dispPitch = 0;
+    //         currState = originalIdle;
+	// 					// flywheel::currState = flywheel::flywheelStates::notRunning;
+    //         feeder::currState = feeder::feederStates::notRunning;
+    //     }
 
-        if (userUART::aimMsgQueue != NULL) {
-            if (xQueueReceive(userUART::aimMsgQueue, &(pxAimRxedPointer), (TickType_t)0) == pdPASS) {
-                if (pxAimRxedPointer->prefix == userUART::jetsonMsgTypes::aimAt) {
-                    bung++;
-                    dispYaw = pxAimRxedPointer->disp[0];
-                    dispPitch = pxAimRxedPointer->disp[1];
-                    xStddev = pxAimRxedPointer->stddev[0];
-                    yStddev = pxAimRxedPointer->stddev[1];
-                    currState = aimFromCV;
-                    if (xStddev == 1) {
-												//if (feeder::currState == feeder::feederStates::notRunning) {
-												//}
-                        // flywheel::currState = flywheel::flywheelStates::running;
-                        feeder::currState = feeder::feederStates::running;
-                    } else {
-                        // flywheel::currState = flywheel::flywheelStates::notRunning;
-                        feeder::currState = feeder::feederStates::notRunning;
-                    }
-										//if (yStddev == 1) {
-										//		flywheel::currState = flywheel::flywheelStates::notRunning;
-                    //    feeder::currState = feeder::feederStates::notRunning;
-										//		currState = originalIdle;
-										//}
-                    jetsonMessageTimeout = 0;
-                }
-            }
-        }
-        // sendJetsonMessage(normalizePitchAngle());
-        gimbStateShow = currState;
-				jetsonMessageTimeout += 2;
-    }
+    //     if (userUART::aimMsgQueue != NULL) {
+    //         if (xQueueReceive(userUART::aimMsgQueue, &(pxAimRxedPointer), (TickType_t)0) == pdPASS) {
+    //             if (pxAimRxedPointer->prefix == userUART::jetsonMsgTypes::aimAt) {
+    //                 bung++;
+    //                 dispYaw = pxAimRxedPointer->disp[0];
+    //                 dispPitch = pxAimRxedPointer->disp[1];
+    //                 xStddev = pxAimRxedPointer->stddev[0];
+    //                 yStddev = pxAimRxedPointer->stddev[1];
+    //                 currState = aimFromCV;
+    //                 if (xStddev == 1) {
+	// 											//if (feeder::currState == feeder::feederStates::notRunning) {
+	// 											//}
+    //                     // flywheel::currState = flywheel::flywheelStates::running;
+    //                     feeder::currState = feeder::feederStates::running;
+    //                 } else {
+    //                     // flywheel::currState = flywheel::flywheelStates::notRunning;
+    //                     feeder::currState = feeder::feederStates::notRunning;
+    //                 }
+	// 									//if (yStddev == 1) {
+	// 									//		flywheel::currState = flywheel::flywheelStates::notRunning;
+    //                 //    feeder::currState = feeder::feederStates::notRunning;
+	// 									//		currState = originalIdle;
+	// 									//}
+    //                 jetsonMessageTimeout = 0;
+    //             }
+    //         }
+    //     }
+    //     // sendJetsonMessage(normalizePitchAngle());
+    //     gimbStateShow = currState;
+    //     jetsonMessageTimeout += 2;
+    // }
 
-    if (operatingType == secondary) {
-        //currState = notRunning;
+    // if (operatingType == secondary) {
+    //     //currState = notRunning;
 
-        yawAngleShow = radToDeg(yawMotor.getAngle());
-        yawPidShow = yawPosPid.getOutput();
+    //     yawAngleShow = radToDeg(yawMotor.getAngle());
+    //     yawPidShow = yawPosPid.getOutput();
 
-        userIMU::imuUpdate();
+    //     userIMU::imuUpdate();
 
-        roll = userIMU::imuRoll();
-        pitch = userIMU::imuPitch();
-        yaw = userIMU::imuYaw();
+    //     roll = userIMU::imuRoll();
+    //     pitch = userIMU::imuPitch();
+    //     yaw = userIMU::imuYaw();
 			
-				if (dev2devGimbTimeout > 50){
-						currState = notRunning;
-						yawRx = 0;
-				}
+	// 			if (dev2devGimbTimeout > 50){
+	// 					currState = notRunning;
+	// 					yawRx = 0;
+	// 			}
 
-        if (userUART::gimbMsgQueue != NULL) {
-            if (xQueueReceive(userUART::gimbMsgQueue, &(pxGimbRxedPointer), (TickType_t)0) == pdPASS) {
-                if (pxGimbRxedPointer->prefix == userUART::d2dMsgTypes::gimbal) {
-                    bung++;
-                    currState = pxGimbRxedPointer->state;
-                    yawRx = pxGimbRxedPointer->yaw;
+    //     if (userUART::gimbMsgQueue != NULL) {
+    //         if (xQueueReceive(userUART::gimbMsgQueue, &(pxGimbRxedPointer), (TickType_t)0) == pdPASS) {
+    //             if (pxGimbRxedPointer->prefix == userUART::d2dMsgTypes::gimbal) {
+    //                 bung++;
+    //                 currState = pxGimbRxedPointer->state;
+    //                 yawRx = pxGimbRxedPointer->yaw;
 
-                }
-            }
-        }
-        gimbStateShow = currState;
-				dev2devGimbTimeout += 10;
-    }
+    //             }
+    //         }
+    //     }
+    //     gimbStateShow = currState;
+	// 			dev2devGimbTimeout += 10;
+    // }
 
     //HAL_UART_Transmit(&huart6, (uint8_t*)"sacke", sizeof("sacke"), 50);
 

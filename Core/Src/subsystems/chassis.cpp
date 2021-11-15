@@ -55,7 +55,7 @@ chassisMotor c1Motor(userCAN::M3508_M1_ID, velPidC1, chassisVelFilter);
 
 void task() {
 
-    SCurveMotionProfile movement(profileConstraints, 1); // move 1 meter
+    // SCurveMotionProfile movement(profileConstraints, 1); // move 1 meter
 
     for (;;) {
 
@@ -78,28 +78,30 @@ void task() {
 void update() {
     struct userUART::chassisMsgStruct* pxChassisRxedPointer;
 
-    if (operatingType == primary) {
-        // currState = manual;
-        // will change later based on RC input and sensor based decision making
-    }
+    currState = notRunning;
 
-    if (operatingType == secondary) {
-        // currState = notRunning; // default state if not updated by primary board
-        angleOutput = radToDeg(angle);
+    // if (operatingType == primary) {
+    //     // currState = manual;
+    //     // will change later based on RC input and sensor based decision making
+    // }
 
-        if (userUART::chassisMsgQueue != NULL) {
-            if (xQueueReceive(userUART::chassisMsgQueue, &(pxChassisRxedPointer), (TickType_t)0) == pdPASS) {
-                if (pxChassisRxedPointer->prefix == userUART::d2dMsgTypes::chassis) {
-                    c1Output = c1Motor.getSpeed();
-                    currState = pxChassisRxedPointer->state;
-                    c1Rx = pxChassisRxedPointer->m1;
-                }
-            }
-        }
-    }
+    // if (operatingType == secondary) {
+    //     // currState = notRunning; // default state if not updated by primary board
+    //     angleOutput = radToDeg(angle);
 
-    currTime = HAL_GetTick();
-		chasStateShow = currState;
+    //     if (userUART::chassisMsgQueue != NULL) {
+    //         if (xQueueReceive(userUART::chassisMsgQueue, &(pxChassisRxedPointer), (TickType_t)0) == pdPASS) {
+    //             if (pxChassisRxedPointer->prefix == userUART::d2dMsgTypes::chassis) {
+    //                 c1Output = c1Motor.getSpeed();
+    //                 currState = pxChassisRxedPointer->state;
+    //                 c1Rx = pxChassisRxedPointer->m1;
+    //             }
+    //         }
+    //     }
+    // }
+
+    // currTime = HAL_GetTick();
+    // chasStateShow = currState;
 
     //velPidC1.setTarget(100);
 }
