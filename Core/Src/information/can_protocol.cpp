@@ -1,12 +1,12 @@
-#include "can.h"
-#include "cmsis_os.h"
-#include "main.h"
-#include "stm32f4xx_hal_can.h"
+#include "information/can_protocol.hpp"
+
 #include <string.h>
 
-#include "information/can_protocol.hpp"
+#include "can.h"
+#include "cmsis_os.h"
 #include "information/device.hpp"
-
+#include "main.h"
+#include "stm32f4xx_hal_can.h"
 #include "subsystems/chassis.hpp"
 #include "subsystems/feeder.hpp"
 #include "subsystems/gimbal.hpp"
@@ -27,8 +27,8 @@ static volatile uint32_t unknown_message = 0;
 // Counter for any unreadable messages (Debug purposes)
 
 static CAN_RxHeaderTypeDef rx_header;
-//rx_header.stdId = 4;
-static uint8_t rx_data[8]; // data field for incoming messages (from DJI motors/escs)
+// rx_header.stdId = 4;
+static uint8_t rx_data[8];  // data field for incoming messages (from DJI motors/escs)
 
 static bool initialized = false;
 
@@ -50,12 +50,12 @@ void canFilterInit() {
     can_filter_st.FilterMaskIdHigh = 0x0000;
     can_filter_st.FilterMaskIdLow = 0x0000;
     can_filter_st.FilterFIFOAssignment = CAN_FilterFIFO0;
-    can_filter_st.SlaveStartFilterBank = 14; //can1(0-13)和can2(14-27)分别得到一半的filter
+    can_filter_st.SlaveStartFilterBank = 14;  // can1(0-13)和can2(14-27)分别得到一半的filter
     can_filter_st.FilterActivation = ENABLE;
 
     if (HAL_CAN_ConfigFilter(&hcan1, &can_filter_st) == 0x00U) {
         // indicator here
-    } // Creates filter that doesn't filter anything
+    }  // Creates filter that doesn't filter anything
 
     if (HAL_CAN_Start(&hcan1) == 0x00U) {
         // indicator here
@@ -68,7 +68,6 @@ void canFilterInit() {
 }
 
 int8_t deviceInit(device_t* can_devices) {
-
     if (can_devices == NULL) {
         return DEVICE_ERR_NULL;
     }
@@ -77,7 +76,7 @@ int8_t deviceInit(device_t* can_devices) {
     // }
     if (initialized) {
         return DEVICE_ERR_INITED;
-        /* "initialized" is set to false by default, 
+        /* "initialized" is set to false by default,
         if it's already true then something went wrong
         and initialization already happened */
     }
@@ -97,7 +96,7 @@ device_t* getDevices(void) {
 }
 
 int8_t motor_ControlChassis(float32_t m1, float32_t m2, float32_t m3, float32_t m4, CAN_HandleTypeDef can) {
-    int16_t motor1 = static_cast<int16_t>((m1 * M3508_MAX_CURRENT) / 100); // scalar describes current cap but is named volt for some reason
+    int16_t motor1 = static_cast<int16_t>((m1 * M3508_MAX_CURRENT) / 100);  // scalar describes current cap but is named volt for some reason
     int16_t motor2 = static_cast<int16_t>((m2 * M2006_MAX_CURRENT) / 100);
     int16_t motor3 = static_cast<int16_t>((m3 * M2006_MAX_CURRENT) / 100);
     int16_t motor4 = static_cast<int16_t>((m4 * M2006_MAX_CURRENT) / 100);
@@ -167,51 +166,55 @@ int8_t motor_QuickIdSetMode(void) {
 
 bool getMessage(CAN_HandleTypeDef* can) {
     if (HAL_CAN_GetRxMessage(can, CAN_RX_FIFO0, &rx_header, rx_data) != 0x00U) {
-        //HAL_GPIO_WritePin(GPIOE, LED_RED_Pin, GPIO_PIN_RESET);
+        // HAL_GPIO_WritePin(GPIOE, LED_RED_Pin, GPIO_PIN_RESET);
         return false;
     }
 
     // uint8_t index;
     switch (rx_header.StdId) {
-    case M3508_M1_ID:
-        // motor_Decode(&(can_devices_ptr->feeder_fb), rx_data);
-        motor_Decode(chassis::c1Motor.getFeedback(), rx_data);
-        break;
+        case M3508_M1_ID:
+            // motor_Decode(&(can_devices_ptr->feeder_fb), rx_data);
+            motor_Decode(chassis::c1Motor.getFeedback(), rx_data);
+            break;
 
-    case M2006_INDEXER_ID:
-        motor_Decode(feeder::indexer.getFeedback(), rx_data);
-        break;
+        case M3508_M2_ID:
+            // motor_Decode(&(can_devices_ptr->feeder_fb), rx_data);
+            motor_Decode(chassis::c2Motor.getFeedback(), rx_data);
+            break;
 
-    case M2006_AGITATOR_RIGHT_ID:
-        motor_Decode(feeder::agitatorRight.getFeedback(), rx_data);
-        break;
+        case M2006_INDEXER_ID:
+            motor_Decode(feeder::indexer.getFeedback(), rx_data);
+            break;
 
-    case M2006_AGITATOR_LEFT_ID:
-        motor_Decode(feeder::agitatorLeft.getFeedback(), rx_data);
-        break;
+        case M2006_AGITATOR_RIGHT_ID:
+            motor_Decode(feeder::agitatorRight.getFeedback(), rx_data);
+            break;
 
-    case GM6020_YAW_ID:
-        motor_Decode(gimbal::yawMotor.getFeedback(), rx_data);
-        lastYAWTime = currYAWTime;
-        currYAWTime = HAL_GetTick();
+            // case M2006_AGITATOR_LEFT_ID:
+            //     motor_Decode(feeder::agitatorLeft.getFeedback(), rx_data);
+            //     break;
 
-        lastYAWDataTime = currYAWTime - lastYAWTime;
-        break;
+        case GM6020_YAW_ID:
+            motor_Decode(gimbal::yawMotor.getFeedback(), rx_data);
+            lastYAWTime = currYAWTime;
+            currYAWTime = HAL_GetTick();
 
-    case GM6020_PIT_ID:
-        motor_Decode(gimbal::pitchMotor.getFeedback(), rx_data);
-        break;
+            lastYAWDataTime = currYAWTime - lastYAWTime;
+            break;
 
-    default:
-        unknown_message++;
-        // HAL_GPIO_WritePin(GPIOE, LED_RED_Pin, GPIO_PIN_RESET);
-        break;
+        case GM6020_PIT_ID:
+            motor_Decode(gimbal::pitchMotor.getFeedback(), rx_data);
+            break;
+
+        default:
+            unknown_message++;
+            // HAL_GPIO_WritePin(GPIOE, LED_RED_Pin, GPIO_PIN_RESET);
+            break;
     }
     return true;
 }
 
 void task() {
-
     userInit::canInit();
 
     for (;;) {
@@ -230,9 +233,9 @@ void task() {
 
 void receive() {
     canFillLevel = HAL_CAN_GetRxFifoFillLevel(&hcan1, CAN_RX_FIFO0);
-    //if (canFillLevel > 0) {
-    //HAL_GPIO_WritePin(GPIOE, LED_RED_Pin, GPIO_PIN_RESET);
-    //while(HAL_CAN_GetRxFifoFillLevel(&hcan1, CAN_RX_FIFO0) > 0){
+    // if (canFillLevel > 0) {
+    // HAL_GPIO_WritePin(GPIOE, LED_RED_Pin, GPIO_PIN_RESET);
+    // while(HAL_CAN_GetRxFifoFillLevel(&hcan1, CAN_RX_FIFO0) > 0){
     for (unsigned int i = 0; i < canFillLevel; i++) {
         userCAN::getMessage(&hcan1);
     }
@@ -241,14 +244,14 @@ void receive() {
 
 void send() {
     if (operatingType == primary) {
-        userCAN::motor_ControlChassis(chassis::c1Motor.getPower(), feeder::agitatorLeft.getPower(), feeder::agitatorRight.getPower(), 0, hcan1);
+        userCAN::motor_ControlChassis(chassis::c1Motor.getPower(), chassis::c2Motor.getPower(), feeder::agitatorRight.getPower(), 0, hcan1);
         userCAN::motor_ControlGimbFeed(gimbal::yawMotor.getPower(), gimbal::pitchMotor.getPower(), feeder::indexer.getPower(), hcan1);
     }
 
     if (operatingType == secondary) {
-        userCAN::motor_ControlChassis(chassis::c1Motor.getPower(), feeder::agitatorLeft.getPower(), feeder::agitatorRight.getPower(), 0, hcan1);
+        userCAN::motor_ControlChassis(chassis::c1Motor.getPower(), chassis::c2Motor.getPower(), feeder::agitatorRight.getPower(), 0, hcan1);
         userCAN::motor_ControlGimbFeed(gimbal::yawMotor.getPower(), gimbal::pitchMotor.getPower(), feeder::indexer.getPower(), hcan1);
     }
 }
 
-} // namespace userCAN
+}  // namespace userCAN

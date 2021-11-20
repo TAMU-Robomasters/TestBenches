@@ -1,4 +1,5 @@
 devacustom\can_protocol.o: ..\Core\Src\information\can_protocol.cpp
+devacustom\can_protocol.o: ../Core/Inc/information/can_protocol.hpp
 devacustom\can_protocol.o: ../Core/Inc/can.h
 devacustom\can_protocol.o: ../Core/Inc/main.h
 devacustom\can_protocol.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h
@@ -54,7 +55,6 @@ devacustom\can_protocol.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/qu
 devacustom\can_protocol.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
 devacustom\can_protocol.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h
 devacustom\can_protocol.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
-devacustom\can_protocol.o: ../Core/Inc/information/can_protocol.hpp
 devacustom\can_protocol.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h
 devacustom\can_protocol.o: ../Core/Inc/information/device.hpp
 devacustom\can_protocol.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h

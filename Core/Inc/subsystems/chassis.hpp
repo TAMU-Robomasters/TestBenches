@@ -24,7 +24,7 @@
 
 #define METERSPS_TO_RPM(pv) ((pv * 461.539f))
 
-#define RAIL_LEN 60.0 // 60in
+#define RAIL_LEN 60.0  // 60in
 
 extern double railPosition;
 extern float lastChassisAngle;
@@ -32,10 +32,10 @@ extern float lastChassisAngle;
 namespace chassis {
 
 class chassisMotor : public canMotor {
-private:
+   private:
     pidInstance* PID;
 
-public:
+   public:
     chassisMotor(int16_t ID, float32_t lC, float32_t uC, filter::Kalman filter) : canMotor(ID, -100, 100, filter, 8191, 19) {}
     chassisMotor(int16_t ID, float32_t lC, float32_t uC, pidInstance& pid, filter::Kalman filter) : canMotor(ID, -100, 100, filter, 8191, 19), PID(&pid) {}
     chassisMotor(int16_t ID, pidInstance& pid, filter::Kalman filter) : canMotor(ID, -100, 100, filter, 8191, 19), PID(&pid) {}
@@ -44,7 +44,7 @@ public:
         PID = &pid;
     }
 };
-extern chassisMotor c1Motor;
+extern chassisMotor c1Motor, c2Motor;
 
 enum chassisStates {
     notRunning = 0,
@@ -86,6 +86,6 @@ extern void profiledMove(float distance);
 
 extern void positionMove(float distance);
 
-extern void velocityMove (float velocity, float time);
+extern void velocityMove(float velocity, float time);
 
-} // namespace chassis
+}  // namespace chassis
