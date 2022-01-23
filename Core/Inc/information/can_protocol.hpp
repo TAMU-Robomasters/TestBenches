@@ -42,10 +42,10 @@ typedef unsigned int uint32_t;
 namespace userCAN {
 
 typedef enum motorId_t {
-    M3508_M1_ID = 0x201,             /* 1 */
-    M3508_M2_ID = 0x202,             /* 2 */
-    M2006_AGITATOR_LEFT_ID = 0x202,  /* 2 */
-    M2006_AGITATOR_RIGHT_ID = 0x203, /* 3 */
+    M3508_M1_ID = 0x201, /* 1 */
+    M3508_M2_ID = 0x202, /* 2 */
+    M3508_M3_ID = 0x203, /* 2 */
+    M3508_M4_ID = 0x204, /* 3 */
     /* https://rm-static.djicdn.com/tem/17348/RoboMaster%20C620%20Brushless%20DC%20Motor%20Speed%20Controller%20V1.01.pdf */
 
     GM6020_YAW_ID = 0x205, /* 1 */

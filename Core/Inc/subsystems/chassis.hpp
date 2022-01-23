@@ -44,7 +44,7 @@ class chassisMotor : public canMotor {
         PID = &pid;
     }
 };
-extern chassisMotor c1Motor, c2Motor;
+extern chassisMotor c1Motor, c2Motor, c3Motor, c4Motor;
 
 enum chassisStates {
     notRunning = 0,

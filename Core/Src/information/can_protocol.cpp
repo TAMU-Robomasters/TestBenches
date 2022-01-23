@@ -182,12 +182,12 @@ bool getMessage(CAN_HandleTypeDef* can) {
             motor_Decode(chassis::c2Motor.getFeedback(), rx_data);
             break;
 
-        case M2006_INDEXER_ID:
-            motor_Decode(feeder::indexer.getFeedback(), rx_data);
+        case M3508_M3_ID:
+            motor_Decode(chassis::c3Motor.getFeedback(), rx_data);
             break;
 
-        case M2006_AGITATOR_RIGHT_ID:
-            motor_Decode(feeder::agitatorRight.getFeedback(), rx_data);
+        case M3508_M4_ID:
+            motor_Decode(chassis::c4Motor.getFeedback(), rx_data);
             break;
 
             // case M2006_AGITATOR_LEFT_ID:
@@ -244,12 +244,12 @@ void receive() {
 
 void send() {
     if (operatingType == primary) {
-        userCAN::motor_ControlChassis(chassis::c1Motor.getPower(), chassis::c2Motor.getPower(), feeder::agitatorRight.getPower(), 0, hcan1);
+        userCAN::motor_ControlChassis(chassis::c1Motor.getPower(), chassis::c2Motor.getPower(), chassis::c3Motor.getPower(), chassis::c4Motor.getPower(), hcan1);
         userCAN::motor_ControlGimbFeed(gimbal::yawMotor.getPower(), gimbal::pitchMotor.getPower(), feeder::indexer.getPower(), hcan1);
     }
 
     if (operatingType == secondary) {
-        userCAN::motor_ControlChassis(chassis::c1Motor.getPower(), chassis::c2Motor.getPower(), feeder::agitatorRight.getPower(), 0, hcan1);
+        userCAN::motor_ControlChassis(chassis::c1Motor.getPower(), chassis::c2Motor.getPower(), chassis::c3Motor.getPower(), chassis::c4Motor.getPower(), hcan1);
         userCAN::motor_ControlGimbFeed(gimbal::yawMotor.getPower(), gimbal::pitchMotor.getPower(), feeder::indexer.getPower(), hcan1);
     }
 }

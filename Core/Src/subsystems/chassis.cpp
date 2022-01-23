@@ -19,7 +19,7 @@ float angleOutput;
 float turning, disp;
 float motor1P, motor2P, motor3P, motor4P;
 float c1SentPower, c1Derivative, c1Output;
-int c1Speed, c2Speed;
+int c1Speed, c2Speed, c3Speed, c4Speed;
 
 double railPosition;
 float lastChassisAngle;
@@ -56,10 +56,14 @@ filter::Kalman chassisVelFilter(0.05, 16.0, 1023.0, 0.0);
 
 pidInstance velPidC1(pidType::velocity, 0.2, 0.000, 5.000);
 pidInstance velPidC2(pidType::velocity, 0.2, 0.000, 5.000);
+pidInstance velPidC3(pidType::velocity, 0.2, 0.000, 5.000);
+pidInstance velPidC4(pidType::velocity, 0.2, 0.000, 5.000);
 pidInstance posPidChassis(pidType::position, 1.5, 0, 0);
 
 chassisMotor c1Motor(userCAN::M3508_M1_ID, velPidC1, chassisVelFilter);
-chassisMotor c2Motor(userCAN::M3508_M1_ID, velPidC1, chassisVelFilter);
+chassisMotor c2Motor(userCAN::M3508_M2_ID, velPidC2, chassisVelFilter);
+chassisMotor c3Motor(userCAN::M3508_M3_ID, velPidC3, chassisVelFilter);
+chassisMotor c4Motor(userCAN::M3508_M4_ID, velPidC4, chassisVelFilter);
 
 void task() {
     // SCurveMotionProfile movement(profileConstraints, 1); // move 1 meter
@@ -118,8 +122,12 @@ void act() {
         case notRunning:
             velPidC1.setTarget(0);
             velPidC2.setTarget(0);
+            velPidC3.setTarget(0);
+            velPidC4.setTarget(0);
             c1Motor.setPower(velPidC1.loop(c1Motor.getSpeed()));
             c2Motor.setPower(velPidC2.loop(c2Motor.getSpeed()));
+            c3Motor.setPower(velPidC3.loop(c3Motor.getSpeed()));
+            c4Motor.setPower(velPidC4.loop(c4Motor.getSpeed()));
             break;
 
         case manual:
@@ -136,20 +144,30 @@ void act() {
             if (getSwitch(switchType::right) == switchPosition::down) {
                 velPidC1.setTarget(-400);
                 velPidC2.setTarget(400);
+                velPidC3.setTarget(-400);
+                velPidC4.setTarget(400);
             } else if (getSwitch(switchType::right) == switchPosition::mid) {
                 velPidC1.setTarget(-450);
                 velPidC2.setTarget(450);
+                velPidC3.setTarget(-450);
+                velPidC4.setTarget(450);
             } else if (getSwitch(switchType::right) == switchPosition::up) {
                 velPidC1.setTarget(-550);
                 velPidC2.setTarget(550);
+                velPidC3.setTarget(-550);
+                velPidC4.setTarget(550);
             }
 
             c1Speed = c1Motor.getSpeed();
             c2Speed = c2Motor.getSpeed();
+            c3Speed = c3Motor.getSpeed();
+            c4Speed = c4Motor.getSpeed();
 
             // c1Motor.setPower(velPidC1.getTarget());
             c1Motor.setPower(velPidC1.loop(c1Motor.getSpeed()));
             c2Motor.setPower(velPidC2.loop(c2Motor.getSpeed()));
+            c3Motor.setPower(velPidC3.loop(c3Motor.getSpeed()));
+            c4Motor.setPower(velPidC4.loop(c4Motor.getSpeed()));
             // }
             // this will change when we have things to put here
             break;
