@@ -1,13 +1,15 @@
 #include "subsystems/flywheel.hpp"
-#include "init.hpp"
-#include "information/rc_protocol.h"
+
 #include <arm_math.h>
+
+#include "information/rc_protocol.h"
+#include "init.hpp"
 
 namespace flywheel {
 
 flywheelStates currState = notRunning;
 
-double angularAccLimit = 0.1; // defined as rpm/10ms^2
+double angularAccLimit = 0.1;  // defined as rpm/10ms^2
 
 flywheelMotor flywheel1(&htim2, 1, POWER1_CTRL_GPIO_Port, POWER1_CTRL_Pin);
 flywheelMotor flywheel2(&htim2, 2, POWER3_CTRL_GPIO_Port, POWER3_CTRL_Pin);
@@ -19,7 +21,7 @@ void task() {
     HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
     osDelay(500);
     flywheel1.initESC();
-    //osDelay(1000);
+    // osDelay(1000);
     flywheel2.initESC();
 
     for (;;) {
@@ -41,17 +43,26 @@ void update() {
 
 void act() {
     switch (currState) {
-    case notRunning:
-        flywheel1.setPower(0);
-        flywheel2.setPower(0);
-        break;
+        case notRunning:
+            flywheel1.setPower(0);
+            flywheel2.setPower(0);
+            break;
 
-    case running:
-        flywheel1.setPower(25);
-        flywheel2.setPower(25);
-        //calcSlewDRpm(flywheel1.getPower(), flywheel2.getPower(), 10, 40);
-        // obviously this will change when we have actual intelligent things to put here
-        break;
+        case running:
+            if (getSwitch(switchType::right) == switchPosition::down) {
+                flywheel1.setPower(60);
+                flywheel2.setPower(60);
+            } else if (getSwitch(switchType::right) == switchPosition::mid) {
+                flywheel1.setPower(80);
+                flywheel2.setPower(80);
+            } else if (getSwitch(switchType::right) == switchPosition::up) {
+                flywheel1.setPower(100);
+                flywheel2.setPower(100);
+            }
+
+            // calcSlewDRpm(flywheel1.getPower(), flywheel2.getPower(), 10, 40);
+            //  obviously this will change when we have actual intelligent things to put here
+            break;
     }
 }
 
@@ -60,33 +71,27 @@ double calcSlewDRpm(double currFw1Speed, double currFw2Speed, double targetFw1Sp
     double fw2DRPM;
     double velLim = angularAccLimit * 10;
 
-    if(angularAccLimit > abs(targetFw1Speed - currFw1Speed) / 10) {
+    if (angularAccLimit > abs(targetFw1Speed - currFw1Speed) / 10) {
         fw1DRPM = targetFw1Speed - currFw1Speed;
-    }
-    else if(angularAccLimit < abs(targetFw1Speed - currFw1Speed) / 10) {
-        if(targetFw1Speed - currFw1Speed < 0) {
+    } else if (angularAccLimit < abs(targetFw1Speed - currFw1Speed) / 10) {
+        if (targetFw1Speed - currFw1Speed < 0) {
             fw1DRPM = -velLim;
-        }
-        else if(targetFw1Speed - currFw1Speed > 0) {
+        } else if (targetFw1Speed - currFw1Speed > 0) {
             fw1DRPM = velLim;
         }
-    }
-    else {
+    } else {
         fw1DRPM = 0;
     }
 
-    if(angularAccLimit > abs(targetFw2Speed - currFw2Speed) / 10) {
+    if (angularAccLimit > abs(targetFw2Speed - currFw2Speed) / 10) {
         fw2DRPM = targetFw2Speed - currFw2Speed;
-    }
-    else if(angularAccLimit < abs(targetFw2Speed - currFw2Speed) / 10) {
-        if(targetFw2Speed - currFw2Speed < 0) {
+    } else if (angularAccLimit < abs(targetFw2Speed - currFw2Speed) / 10) {
+        if (targetFw2Speed - currFw2Speed < 0) {
             fw2DRPM = -velLim;
-        }
-        else if(targetFw2Speed - currFw2Speed > 0) {
+        } else if (targetFw2Speed - currFw2Speed > 0) {
             fw2DRPM = velLim;
         }
-    }
-    else {
+    } else {
         fw2DRPM = 0;
     }
 
@@ -95,4 +100,4 @@ double calcSlewDRpm(double currFw1Speed, double currFw2Speed, double targetFw1Sp
 
     return 0;
 }
-} // namespace flywheel
+}  // namespace flywheel
