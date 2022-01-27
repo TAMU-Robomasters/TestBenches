@@ -3633,9 +3633,9 @@
       </Doc>
       <Doc>
         <Name>../Core/Inc/information/can_protocol.hpp</Name>
-        <ColumnNumber>4</ColumnNumber>
+        <ColumnNumber>32</ColumnNumber>
         <TopLine>29</TopLine>
-        <CurrentLine>57</CurrentLine>
+        <CurrentLine>45</CurrentLine>
         <Folding>1</Folding>
         <ContractedFolders></ContractedFolders>
         <PaneID>0</PaneID>
@@ -3745,9 +3745,9 @@
       </Doc>
       <Doc>
         <Name>..\Core\Src\information\can_protocol.cpp</Name>
-        <ColumnNumber>153</ColumnNumber>
+        <ColumnNumber>36</ColumnNumber>
         <TopLine>219</TopLine>
-        <CurrentLine>252</CurrentLine>
+        <CurrentLine>226</CurrentLine>
         <Folding>1</Folding>
         <ContractedFolders></ContractedFolders>
         <PaneID>0</PaneID>
